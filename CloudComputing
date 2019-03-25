@@ -1,0 +1,55 @@
+
+CLOUD COMPUTING by Matin (frm Knowledge centre):
+-----------------
+
+-Internet base computing.
+-Computer resources(Computer, n/w, servers, storage, application and services) can be provisioned and released with minimal efforts.
+-CDN(content delivery network)...eg. Jquery and Bootstrap
+
+-Private Cloud(cloud in premises)
+	Eg. FreeBird in persistent( is a hybrid cloud , we can connect to AWS/Azure through it) developed on open stack technology.
+
+- Seperate cloud platform in AWS called GREEN GRASS(free IOT with 1 million free messaging).
+
+-Amazon was first introduced Cloud in 2006. Google and IBM are late comers to this field.
+
+Cloud...?
+Cloud 1.0				Cloud 2.0					Cloud 3.0						Cloud 3.0+
+visual m/c				- Application				-Automation						-Open Standard
+(IAAS)					- Databases					-Configuration					-Cluster friendly
+						(SaaS, PaaS)				-Managed Services				-AI
+													-API Management					-IOT
+													-Serverless						-BlockChain
+													-Microservice					-More managed services
+													-Container
+													
+													
+-Virtual desktop created on Azure cann't move to Azure. Open standards are working on this.
+
+2006-AWS-charges per minute	==>	2010-Azure- charges per hour	==>	2014-GCP(Google cloud platform)-charges per second
+
+
+-DataCentres(should be maintained at low temp to cool down servers....generally data centre maintained at 6-10 degree Celsius)
+
+
+
+SaaS: Software as a Service.
+PaaS: Platform as a Service.
+IaaS: Infrastructure as a Service.
+FaaS: Function as a service
+CaaS: container as a Services
+DaaS: Data as a service
+XaaS: Everything as a service
+
+
+AWS Works :
+> Build (software)
+> Migration(software/hardware)
+>Integration(taking from multiple sources and bringing under single umbrella of cloud)
+
+
+
+
+Don't treat ur server as a pet, Use it as use and throw material.
+
+	
