@@ -1,2 +1,21 @@
 First commit
 <%@taglib prefix="s" uri="/struts-tags" %>
+<%@ include file="/includes/common.jsp" %>
+
+<html>
+<head>
+<%@ include file="/includes/common_head.jsp" %>
+
+<link  rel="stylesheet" href="styles/tabpane/tab.css" type="text/css">
+<script type="text/javascript" src="js/tabpane/tabpane.js"></script>
+
+<script language="JavaScript">
+
+isExemptFromAdminMutex = true;
+
+var tooltip_PasswordRules = "";
+<% if (request.getAttribute("passwordToolTip") != null){%>	
+	tooltip_PasswordRules = '<%=request.getAttribute("passwordToolTip")%>';
+<%}%>
+
+function selectAssigned() {
