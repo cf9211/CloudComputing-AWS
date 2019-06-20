@@ -19,3 +19,742 @@ var tooltip_PasswordRules = "";
 <%}%>
 
 function selectAssigned() {
+/alert( document.getElementById('AvailableUserGroups').value);
+	//alert( document.getElementById('AvailableUserGroups').options[0].value);
+	
+	/*var dagsObj = document.getElementById('AvailableUserGroups');
+	for (var i = 0; i < dagsObj.options.length; i++) {	
+	//	dagsObj.options[i].selected = true;
+	alert(dagsObj.options[i]);
+	} */
+	
+	var usgsObj = document.all('AssignedUsgs');
+	var studyUsgsObj = document.all('AssignedStudyUsgs');
+	var siteUsgsObj = document.all('AssignedSiteUsgs');
+	
+	usgsObj.options.length=0;
+	
+	if(studyUsgsObj!=null){
+		for (var i = 0; i < studyUsgsObj.options.length; i++) {	
+			var newOption = new Option(); // Create a new instance of ListItem 
+			newOption.text = studyUsgsObj.options[i].text; 
+			newOption.value = studyUsgsObj.options[i].value; 
+			newOption.selected = true;
+			usgsObj.options[usgsObj.options.length] = newOption; //Append the item in Target Listbox
+		}
+	}
+	
+	if(siteUsgsObj!=null){
+		for (var i = 0; i < siteUsgsObj.options.length; i++) {	
+			var newOption = new Option(); // Create a new instance of ListItem 
+			newOption.text = siteUsgsObj.options[i].text; 
+			newOption.value = siteUsgsObj.options[i].value; 
+			newOption.selected = true;
+			usgsObj.options[usgsObj.options.length] = newOption; //Append the item in Target Listbox			
+		}
+	}	
+	
+	
+}
+
+
+function validateConfirmPassword() {
+	var newPasswordObj = document.getElementById("newPassword");
+	var confirmPasswordObj = document.getElementById("confirmPassword");
+	               
+	if(newPasswordObj.value != confirmPasswordObj.value) {
+		addError(newPasswordObj, "<s:text name="validation.user.password.match" />");
+		return false;
+	}
+			
+	return true;
+}
+
+function validateApplicationAccess() {
+	var studyAppActiveObj = document.getElementById("studyAppActive");
+	var siteAppActiveObj = document.getElementById("siteAppActive");
+	
+	if( ( studyAppActiveObj==null || (studyAppActiveObj!=null && studyAppActiveObj.checked==false) ) &&
+		( siteAppActiveObj== null || (siteAppActiveObj!=null  && siteAppActiveObj.checked==false) )
+	  ) {
+		  if(studyAppActiveObj != null){
+			  addError(studyAppActiveObj, "<s:text name="validation.user.applicationAccess" />");
+		  }else{
+			  addError(siteAppActiveObj, "<s:text name="validation.user.applicationAccess" />");
+	      }
+		return false;
+	}
+	return true;
+}
+
+// add as a custom validation
+customValidations.push(validateConfirmPassword);
+
+function toggleConditionalValidations() {
+	<s:if test="(newOrModifiedUser.key == null)">
+		return;
+	</s:if>
+	<s:else>
+		var newPasswordObj = document.getElementById("newPassword");
+		               
+		if(newPasswordObj == null || newPasswordObj.value == "") {
+			disabledValidations['newPassword'] = true;
+			disabledValidations['confirmPassword'] = true;
+		}        
+		return;
+	</s:else>
+}
+
+function setPreSelectedTab(){
+	
+	<s:if test="hasStudyOptAccess()">
+		appTabPanel.setSelectedPage( 'study' );
+	</s:if>
+	<s:else>
+		<s:if test="hasSiteOptAccess()">
+			appTabPanel.setSelectedPage( 'site' );
+		</s:if>
+	</s:else>
+}
+
+<s:if test="getIsUsingLDAPAuthentication()">
+	function disableFormForLDAP() {
+		
+		var formObj = document.getElementById('userSave');
+		objElems = formObj.elements;
+
+		<s:if test="(newOrModifiedUser.key == null)">		
+			for(i=0;i<objElems.length;i++){
+				objElems[i].disabled = true;
+			}
+		</s:if>
+		<s:else>
+			objElems['newOrModifiedUser.loginId'].disabled = true;
+			objElems['newOrModifiedUser.firstName'].disabled = true;
+			objElems['newOrModifiedUser.lastName'].disabled = true;
+			objElems['newOrModifiedUser.emailAddress'].disabled = true;
+			objElems['newOrModifiedUser.jobType'].disabled = true;
+			objElems['newOrModifiedUser.department'].disabled = true;
+			if(objElems['siteAppActive'] != null){
+				objElems['siteAppActive'].disabled = true;
+			}
+			if(objElems['siteUserEnable'] != null){
+				objElems['siteUserEnable'].disabled = true;
+			}
+			if(objElems['siteUserDisable'] != null){
+				objElems['siteUserDisable'].disabled = true;
+			}
+			if(objElems['studyAppActive'] != null){
+				objElems['studyAppActive'].disabled = true;
+			}
+			if(objElems['studyUserEnable'] != null){
+				objElems['studyUserEnable'].disabled = true;
+			}
+			if(objElems['studyUserDisable'] != null){
+				objElems['studyUserDisable'].disabled = true;
+			}
+			objElems['newPassword'].disabled = true;
+			objElems['confirmPassword'].disabled = true;
+			
+			<%-- don't validate what can't be edited by the user --%>
+			disabledValidations['newOrModifiedUser.loginId'] = true;
+			disabledValidations['newOrModifiedUser.firstName'] = true;	
+			disabledValidations['newOrModifiedUser.lastName'] = true;
+			disabledValidations['newOrModifiedUser.emailAddress'] = true;		
+			disabledValidations['newOrModifiedUser.jobType'] = true;
+			disabledValidations['newOrModifiedUser.department'] = true;
+			disabledValidations['siteAppActive'] = true;
+			disabledValidations['siteUserEnable'] = true;
+			disabledValidations['siteUserDisable'] = true;
+			disabledValidations['studyAppActive'] = true;
+			disabledValidations['studyUserEnable'] = true;
+			disabledValidations['studyUserDisable'] = true
+			disabledValidations['newPassword'] = true;
+			disabledValidations['confirmPassword'] = true;			
+		</s:else>
+	}
+</s:if>
+
+if('<s:property value="newOrModifiedUser.loginId"/>' == '<s:property value="@com.dv.common.ConfigurationConstants@DV_ADMIN" />'){
+	
+	function disableFormForSuperUser() {
+		var formObj = document.getElementById('userSave');
+		objElems = formObj.elements;
+
+		for(i=0;i<objElems.length;i++){
+			/*if(objElems[i].id != 'newOrModifiedUser_key' 	
+					&& objElems[i].id != 'newPassword' 
+					&& objElems[i].id != 'confirmPassword' 
+					&& objElems[i].id !='saveButton' 
+					&& objElems[i].id !='cancelButton') {*/
+				objElems[i].disabled = true;
+				disabledValidations[objElems[i].name] = true;
+			//}
+		}	
+
+	}
+}
+
+/**
+function will be call before tab selection, provide interface to do action on tab select
+tabPage.element.id		 	- This will return div.id of Tab Page 
+tabPage.tabPane.element.id 	- This will return div.id of Tab Pane
+*/
+function beforeTabSelect(tabPage) {
+
+	//if site tab is selected
+	if(tabPage.element.id == 'site'){
+
+	}
+	//if study tab is selected
+	if(tabPage.element.id == 'study'){
+	 
+	}
+	
+	//doing nothing
+	return true;
+}
+
+</script>
+
+</head>
+<s:if test="(newOrModifiedUser.key == null)">
+  <s:set name="pageTitle" value="%{getText('user.userAdministrationAddUsers')}" ></s:set>
+ </s:if>
+<s:else>
+  <s:set name="pageTitle" value="%{getText('user.userAdministrationEditUsers')}" ></s:set>
+</s:else>
+
+
+<s:set name="pageIcon" value="%{'images/icons/user.png'}"></s:set>
+
+<s:if test="getIsUsingLDAPAuthentication() && newOrModifiedUser.loginId==@com.dv.common.ConfigurationConstants@DV_ADMIN">
+	<s:set name="additionalOnloadFunctions" value="%{'disableFormForSuperUser();disableFormForLDAP();'}" >
+	</s:set>
+</s:if>
+<s:else>
+	<s:if test="newOrModifiedUser.loginId==@com.dv.common.ConfigurationConstants@DV_ADMIN">
+		<s:set name="additionalOnloadFunctions"  value="%{'disableFormForSuperUser();'}" >
+		</s:set>
+	</s:if>
+	<s:elseif test="getIsUsingLDAPAuthentication()">
+		<s:set name="additionalOnloadFunctions" value="%{'disableFormForLDAP();'}" ></s:set>
+	</s:elseif>
+</s:else>
+
+
+<jsp:include page="/includes/header.jsp" />
+
+
+<table border="0" cellpadding="3" cellspacing="1" width="745">
+	<s:if test="hasAnyMessages()">
+		<tr>
+			<td>
+				<s:iterator value="actionMessages" status="status">
+				  <li><span class="actionMessage"><s:property/></span></li>
+				</s:iterator>
+				<s:actionerror />
+			</td>
+		</tr>
+	</s:if> 
+   	<tr>
+		<td><img src="images/lngray.gif" width="100%" height="1"></td>
+   	</tr>
+   	<tr>
+		<td colspan="3">
+			<table width="100%" class="remarks">
+				<tr>
+					<td align="center" valign="top"><img src="images/icons/comment.gif" alt="Information" width="16" height="16" hspace="3"></td>
+					<td width="100%">
+						<div id="message">
+							<s:text name="user.managingUsers" />
+							<s:if test="(newOrModifiedUser.key == null)"><s:text name="user.addUser" /></s:if>
+							<s:else><s:text name="user.editUser" /></s:else>
+						</div> 
+					</td>		
+				</tr>
+			</table>
+		</td>
+  	</tr>
+  	
+  	<s:set name="StudyChk" value="%{'NULL'}" />
+  	<s:set name="StudyChkInd" value="%{'NULL'}" />
+  	<s:set name="SiteChk" value="%{'NULL'}" />
+  	<s:set name="SiteChkInd" value="%{'NULL'}" />
+  	 
+  	<s:iterator value="newOrModifiedUser.appAccessList">
+    	<s:if test="%{ applicationId == @com.dv.common.AppConstants@STUDY_OPTIMIZER_APPLICATION_ID }">
+        	<s:if test="%{ activeInd == true }">
+    			<s:set name="StudyChk" value="%{'Y'}" />
+            </s:if>
+            <s:else>
+            	<s:set name="StudyChk" value="%{'N'}" />
+            </s:else>
+        </s:if>
+        <s:if test="%{ applicationId == @com.dv.common.AppConstants@SITE_OPTIMIZER_APPLICATION_ID }">
+        	<s:if test="%{ activeInd == true }">
+    			<s:set name="SiteChk" value="%{'Y'}" />
+            </s:if>
+            <s:else>
+            	<s:set name="SiteChk" value="%{'N'}" />
+            </s:else>
+        </s:if>
+	</s:iterator>
+                        					
+  	<tr>
+		<td>
+			<s:if test="%{newOrModifiedUser.loginId == @com.dv.common.ConfigurationConstants@DV_ADMIN}">
+				<s:set name="actionName" value="%{'userSaveAdmin'}" />
+			</s:if>
+			<s:else>
+				<s:if test="getIsUsingLDAPAuthentication()">
+					<s:set name="actionName" value="%{'userSaveLDAP'}" />
+				</s:if>
+				<s:else>
+					<s:set name="actionName" value="%{'userSave'}" />
+				</s:else>
+			</s:else>
+			
+			<s:form name="userSave" id="userSave" action="%{#actionName}" method="post" validate="true" theme="xhtml" onsubmit="toggleConditionalValidations();selectAssigned();" cssStyle="width:100%;">
+			<s:token/>
+			<s:hidden id="newOrModifiedUser_key" name="newOrModifiedUser.key" value="%{newOrModifiedUser.key}" />
+			<s:hidden id="validate" name="newOrModifiedUser.key" value="%{newOrModifiedUser.key}" />
+			<tr>
+				<td class="tblhd" colspan=3><h2><s:text name="user.userDetails" /></h2></td>
+			</tr>
+			<tr>
+				<td valign=top>
+					<table width= "400">
+						<s:textfield name="newOrModifiedUser.loginId" label="%{getText('user.loginId')}" maxlength="80" size="15"/>
+						<s:textfield name="newOrModifiedUser.firstName" label="%{getText('user.firstName')}" maxlength="80" size="15"/>
+						<s:textfield name="newOrModifiedUser.lastName" label="%{getText('user.lastName')}" maxlength="80" size="15"/>
+						<s:textfield name="newOrModifiedUser.emailAddress" id="emailAddress" label="%{getText('user.emailAddress')}" maxlength="80" size="15"/>
+		                
+		                <tr>
+		                	<td align="right" valign="top" >
+		                		<s:text name="user.applicationAccess" />
+		                	</td>
+		                	
+							
+		                </tr>
+		                <tr > 
+		              
+		                		<s:if test="isStudyOptInstalled() || isSiteOptInstalled()">
+							<td valign="middle" align="right" >
+								<table>
+									<tr>
+										<td align="left">
+											<s:if test="isStudyOptInstalled()">
+												<s:if test="%{#StudyChk == 'Y'}">
+													<s:if test="hasStudyOptAccess() && !getIsUsingLDAPAuthentication()">
+														<input type="checkbox" id="studyAppActive" value="STUDY" name="studyAppActive" checked="true" /><s:text name="user.studyOptmizer" />
+													</s:if>
+													<s:else>
+														<input type="checkbox" disabled="disabled" id="studyAppActive" value="STUDY" name="studyAppActive" checked="true"/><s:text name="user.studyOptmizer" />
+														<input type="hidden" value="STUDY" name="studyAppActive" />
+													</s:else>
+												</s:if>
+												<s:else>
+													<s:if test="hasStudyOptAccess() && !getIsUsingLDAPAuthentication()">
+														<input type="checkbox" id="studyAppActive" value="STUDY" name="studyAppActive"/><s:text name="user.studyOptmizer" />
+													</s:if>
+													<s:else>
+														<input type="checkbox" disabled="disabled" id="studyAppActive" value="STUDY" name="studyAppActive"/><s:text name="user.studyOptmizer" />
+													</s:else>
+												</s:else>
+											</s:if>
+										</td>
+										</tr>
+										<tr>
+										<td align="left">
+											<s:if test="isSiteOptInstalled()">
+												<s:if test="%{#SiteChk == 'Y'}">
+													<s:if test="hasSiteOptAccess() && !getIsUsingLDAPAuthentication()">
+														<input type="checkbox" id="siteAppActive" value="SITE" name="siteAppActive" checked="true"/><s:text name="user.siteOptmizer" />														
+													</s:if>
+													<s:else>
+														<input type="checkbox" disabled="disabled" id="siteAppActive" value="SITE" name="siteAppActive" checked="true"/><s:text name="user.siteOptmizer" />														
+														<input type="hidden" value="SITE" name="siteAppActive" />
+													</s:else>
+												</s:if>
+												<s:else>
+													<s:if test="hasSiteOptAccess() && !getIsUsingLDAPAuthentication()">
+														<input type="checkbox" id="siteAppActive" value="SITE" name="siteAppActive"/><s:text name="user.siteOptmizer" />
+													</s:if>
+													<s:else>
+														<input type="checkbox" disabled="disabled" id="siteAppActive" value="SITE" name="siteAppActive"/><s:text name="user.siteOptmizer" />
+													</s:else>
+												</s:else>
+											</s:if>
+										</td>
+									</tr>
+								</table>
+		                  		
+							</td>
+							</s:if>
+							<s:else>
+								<td valign="middle" align="right"><s:text name="meesage.user.noProduct.appAccess"></s:text>
+								</td>
+							</s:else>
+		                </tr>
+		                
+					</table>
+				</td>
+				<td valign=top>
+					<table width= "250">
+						<s:if test="(newOrModifiedUser.key == null)">
+							<tr>
+								<td colspan=3>
+								<table  cellpadding="3" cellspacing="1">
+										<s:password name="newPassword" id="newPassword"  label="%{getText('user.newPassword')}" maxlength="30" size="15"/>
+										<s:password name="confirmPassword" id="confirmPassword" label="%{getText('user.confirmPassword')}" maxlength="30" size="15"/>
+										<s:textfield name="newOrModifiedUser.jobType" label="%{getText('user.jobType')}" maxlength="80" size="15"/>
+						                <s:textfield name="newOrModifiedUser.department" label="%{getText('user.department')}" maxlength="80" size="15"/>
+										</table>
+								</td>
+							</tr> 
+						</s:if>
+						<s:else>
+							<tr>
+								<td colspan=3>
+									<table class="tbl" cellpadding="3" cellspacing="1" width="100%">
+										<tr>
+											<td colspan="2"><strong><s:text name="user.overwriteExistingPassword" /></strong></td>
+										</tr>
+										<s:password name="newPassword" id="newPassword" showPassword="true" value="%{newOrModifiedUser.encryptedPassword}" label="%{getText('user.newPassword')}  " maxlength="30" size="15"/>
+										<s:password name="confirmPassword" id="confirmPassword" showPassword="true" value="%{newOrModifiedUser.encryptedPassword}" label="%{getText('user.confirmPassword')}  " maxlength="30" size="15"/>
+									</table>
+								</td>
+								
+							</tr>
+							<tr>
+								<td colspan=3 align="right">
+									<table  cellpadding="3" cellspacing="1"  width="83%">
+										
+										<s:textfield name="newOrModifiedUser.jobType" label="%{getText('user.jobType')}" maxlength="80" size="15"/>
+										<s:textfield name="newOrModifiedUser.department" label="%{getText('user.department')}" maxlength="80" size="15"/>
+									</table>
+								</td>
+								
+							</tr>
+						</s:else>
+						
+					</table>
+				</td>
+				
+				<td valign=top style="padding-right: 50px;">
+					<table width= "10">
+						
+						<tr>
+							<td valign="middle">
+		                  		<img src="images/icons/help.gif" align="absmiddle" onMouseOver="toolTip(tooltip_PasswordRules)" onMouseOut="toolTip()" width="14" height="14"/>
+							</td>
+		                </tr>
+					</table>
+				</td>
+		
+				
+			</tr>
+			<tr>
+				<td colspan=3 height="20" valign="bottom"><hr size="1" noshade></td>
+			</tr>
+  			<tr>
+  				<td colspan=3>
+      				<table>
+          				<tr>
+							<td colspan=3 height="20" valign="bottom"><b><s:text name="user.assignUserGroup" /></b> </td>
+						</tr>
+						<tr>
+							<td width='193' height="22" valign="bottom"><font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.userGroupsList" /></font></td>
+							<td width='50' height="22" valign="bottom">&nbsp;</td>
+						</tr>
+						<tr>
+							<td width="193">
+						             <s:if test="(newOrModifiedUser != null)">	
+									<s:select theme="simple" cssStyle="WIDTH: 120" 
+									name="assignedUserGroupKey" 
+									id="AvailableUserGroups"
+									listKey="key" 
+									listValue="name" 
+									list="userGroups"
+									value="userAssignedUserGroup" />	
+								</s:if>
+								<s:else>
+									<s:select theme="simple" cssStyle="WIDTH: 120" 
+									name="assignedUserGroupKey" 
+									id="AvailableUserGroups"
+									listKey="key" 
+									listValue="name" 
+									list="userGroups"
+									 />							
+								</s:else>						
+							</td>
+							</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td colspan=3 height="20" valign="bottom"><hr size="1" noshade></td>
+			</tr>
+			<s:if test="isSiteOptInstalled() || isStudyOptInstalled()">
+      		<tr>
+      			<td colspan=3>
+          			<table>
+          				<tr>
+							<td colspan=3 height="20" valign="bottom"><b><s:text name="user.assignUserSecurityGroups" /></b> </td>
+						</tr>
+						
+						<s:select  theme="simple" cssStyle="display:none;" multiple="true"
+								name="assignedUserSecurityGroupIds" 
+								id="AssignedUsgs"
+								listKey="key"
+								listValue="name" 
+								list="%{#{}}"
+						/>
+						
+						<tr>
+							<td>
+								<div class="tab-pane" id="appTabPanel">
+									<script type="text/javascript">
+										var appTabPanel = new WebFXTabPane( document.getElementById( "appTabPanel" ) );
+									</script>
+									<s:if test="isStudyOptInstalled()">
+										<s:if test="hasStudyOptAccess()">
+											<div class="tab-page" id="study">
+												<h2 class="tab">
+													<div class="intab"><s:text name="product.study" /></div>
+												</h2>
+												<script type="text/javascript">appTabPanel.addTabPage( document.getElementById( "study" ) );</script>
+												<table><tr>
+													<td width="193">
+														<font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.so.userSecurityGroupsList" /></font><br/>
+														<s:select  theme="simple" cssStyle="WIDTH: 187; HEIGHT: 75" multiple="true"
+																name="AvailableStudyUsgs" 
+																id="AvailableStudyUsgs"
+																listKey="key" 
+																listValue="name" 
+																list="userStudySecurityGroups"
+														/>
+													</td>
+													<td width="50">
+														<br/>
+														<p align="left">
+															<INPUT id="move" type="button" value=">>" onclick="moveItem('AvailableStudyUsgs','AssignedStudyUsgs')" style="WIDTH: 43px; HEIGHT: 25px">
+														</p>
+														<p align="left">
+															<INPUT id="move0" type="button" value="<<" onclick="moveItem('AssignedStudyUsgs','AvailableStudyUsgs')" style="WIDTH: 43px; HEIGHT: 24px">
+														</p>
+													</td>
+													<td width="245">
+														<font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.selectedUserSecurityGroups" /></font><br/>
+														<s:if test="(newOrModifiedUser != null)">
+															<s:select  theme="simple" cssStyle="WIDTH: 188; HEIGHT: 75" multiple="true"
+																name="assignedStudyUserSecurityGroupIds"
+																id="AssignedStudyUsgs"
+																listKey="key" 
+																listValue="name" 
+																list="studyUserRoles"
+															/>
+														</s:if>
+														<s:else>
+															<s:select  theme="simple" cssStyle="WIDTH: 188; HEIGHT: 75" multiple="true"
+																name="assignedStudyUserSecurityGroupIds"
+																id="AssignedStudyUsgs"
+																listKey="key" 
+																listValue="name" 
+																list="%{#{}}"
+															/>							
+														</s:else>
+													</td>	
+												</tr></table>
+											</div>											
+										</s:if>
+										<s:else>
+											<div class="tab-page" id="study">
+												<h2 class="tab">
+													<div class="intab"><s:text name="product.study" /></div>
+												</h2>
+												<script type="text/javascript">appTabPanel.addTabPage( document.getElementById( "study" ) );</script>
+												<table><tr>
+													<td width="193">
+														<font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.so.userSecurityGroupsList" /></font><br/>
+														<s:select  theme="simple" cssStyle="WIDTH: 187; HEIGHT: 75" multiple="true"
+																name="AvailableStudyUsgs"
+																disabled="true"
+																id="AvailableStudyUsgs"
+																listKey="key" 
+																listValue="name" 
+																list="userStudySecurityGroups"
+														/>
+													</td>
+													<td width="50">
+														<br/>
+														<p align="left">
+															<INPUT id="move" type="button" disabled="disabled" value=">>" onclick="moveItem('AvailableStudyUsgs','AssignedStudyUsgs')" style="WIDTH: 43px; HEIGHT: 25px">
+														</p>
+														<p align="left">
+															<INPUT id="move0" type="button"  disabled="disabled"value="<<" onclick="moveItem('AssignedStudyUsgs','AvailableStudyUsgs')" style="WIDTH: 43px; HEIGHT: 24px">
+														</p>
+													</td>
+													<td width="245">
+														<font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.selectedUserSecurityGroups" /></font><br/>
+														<s:if test="(newOrModifiedUser != null)">
+															<s:select  theme="simple" cssStyle="WIDTH: 188; HEIGHT: 75" multiple="true"
+																name="assignedStudyUserSecurityGroupIds"
+																id="AssignedStudyUsgs"
+																disabled="true"
+																listKey="key" 
+																listValue="name" 
+																list="studyUserRoles"
+															/>
+														</s:if>
+														<s:else>
+															<s:select  theme="simple" cssStyle="WIDTH: 188; HEIGHT: 75" multiple="true"
+																name="assignedStudyUserSecurityGroupIds"
+																id="AssignedStudyUsgs"
+																disabled="true"
+																listKey="key" 
+																listValue="name" 
+																list="%{#{}}"
+															/>							
+														</s:else>
+													</td>	
+												</tr></table>
+											</div>
+										</s:else>
+
+									</s:if>
+									<s:if test="isSiteOptInstalled()">
+										<s:if test="hasSiteOptAccess()">
+											<div class="tab-page" id="site">
+												<h2 class="tab">
+													<div class="intab"><s:text name="product.site" /></div>
+												</h2>
+												<script type="text/javascript">appTabPanel.addTabPage( document.getElementById( "site" ) );</script>
+												<table><tr>
+													<td width="193">
+														<font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.sio.userSecurityGroupsList" /></font><br/>
+														<s:select  theme="simple" cssStyle="WIDTH: 187; HEIGHT: 75" multiple="true"
+																name="AvailableSiteUsgs" 
+																id="AvailableSiteUsgs"
+																listKey="key" 
+																listValue="name" 
+																list="userSiteSecurityGroups"
+														/>
+													</td>
+													<td width="50">
+														<br/>
+														<p align="left">
+															<INPUT id="move" type="button" value=">>" onclick="moveItem('AvailableSiteUsgs','AssignedSiteUsgs')" style="WIDTH: 43px; HEIGHT: 25px">
+														</p>
+														<p align="left">
+															<INPUT id="move0" type="button" value="<<" onclick="moveItem('AssignedSiteUsgs','AvailableSiteUsgs')" style="WIDTH: 43px; HEIGHT: 24px">
+														</p>
+													</td>
+													<td width="245">
+														<font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.selectedUserSecurityGroups" /></font><br/>
+														<s:if test="(newOrModifiedUser != null)">
+															<s:select  theme="simple" cssStyle="WIDTH: 188; HEIGHT: 75" multiple="true"
+																name="assignedSiteUserSecurityGroupIds"
+																id="AssignedSiteUsgs"
+																listKey="key" 
+																listValue="name" 
+																list="siteUserRoles"
+															/>
+														</s:if>
+														<s:else>
+															<s:select  theme="simple" cssStyle="WIDTH: 188; HEIGHT: 75" multiple="true"
+																name="assignedSiteUserSecurityGroupIds"
+																id="AssignedSiteUsgs"
+																listKey="key" 
+																listValue="name" 
+																list="%{#{}}"
+															/>							
+														</s:else>
+													</td>	
+												</tr></table>
+											</div>
+										</s:if>	
+										<s:else>
+											<div class="tab-page" id="site">
+												<h2 class="tab">
+													<div class="intab"><s:text name="product.site" /></div>
+												</h2>
+												<script type="text/javascript">appTabPanel.addTabPage( document.getElementById( "site" ) );</script>
+												<table><tr>
+													<td width="193">
+														<font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.so.userSecurityGroupsList" /></font><br/>
+														<s:select  theme="simple" cssStyle="WIDTH: 187; HEIGHT: 75" multiple="true"
+																name="AvailableSiteUsgs" 
+																id="AvailableSiteUsgs"
+																disabled="true"
+																listKey="key" 
+																listValue="name" 
+																list="userSiteSecurityGroups"
+														/>
+													</td>
+													<td width="50">
+														<br/>
+														<p align="left">
+															<INPUT id="move" type="button" disabled="disabled" value=">>" onclick="moveItem('AvailableSiteUsgs','AssignedSiteUsgs')" style="WIDTH: 43px; HEIGHT: 25px">
+														</p>
+														<p align="left">
+															<INPUT id="move0" type="button" disabled="disabled" value="<<" onclick="moveItem('AssignedSiteUsgs','AvailableSiteUsgs')" style="WIDTH: 43px; HEIGHT: 24px">
+														</p>
+													</td>
+													<td width="245">
+														<font style="FONT-WEIGHT: 400; FONT-SIZE: 11px"><s:text name="user.selectedUserSecurityGroups" /></font><br/>
+														<s:if test="(newOrModifiedUser != null)">
+															<s:select  theme="simple" cssStyle="WIDTH: 188; HEIGHT: 75" multiple="true"
+																name="assignedSiteUserSecurityGroupIds"
+																id="AssignedSiteUsgs"
+																disabled="true"
+																listKey="key" 
+																listValue="name" 
+																list="siteUserRoles"
+															/>
+														</s:if>
+														<s:else>
+															<s:select  theme="simple" cssStyle="WIDTH: 188; HEIGHT: 75" multiple="true"
+																name="assignedSiteUserSecurityGroupIds"
+																id="AssignedSiteUsgs"
+																disabled="true"
+																listKey="key" 
+																listValue="name" 
+																list="%{#{}}"
+															/>							
+														</s:else>
+													</td>	
+												</tr></table>
+											</div>
+										</s:else>
+									</s:if>
+								</div>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" valign="top" class="frmtxt" height="21"><hr size="1" noshade></td>
+			</tr>
+			</s:if>
+			<tr>
+				<td colspan="3" align="right">
+					<input id="saveButton" name="submit" type="submit" class="btn" value="  <s:text name="user.save" />  " >
+				    <input type="button" id="cancelButton" value="<s:text name="user.cancel" />" onClick="window.location = 'user.action'"  class="btn">
+				</td>
+			</tr>
+			</s:form>
+		</td>
+	</tr>
+</table>
+
+<jsp:include page="/includes/footer.jsp" />
+
+<script language="JavaScript">
+	setPreSelectedTab();	
+</script>
+
+</body>
+</html>
